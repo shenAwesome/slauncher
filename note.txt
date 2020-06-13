@@ -1,0 +1,1 @@
+copy /Y "$(TargetDir)slauncher.exe"  "C:\Program Files (x86)\aslib\SLauncher\slauncher.exe"

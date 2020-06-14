@@ -47,6 +47,7 @@
             // 
             // toolStrip1
             // 
+            this.toolStrip1.BackColor = System.Drawing.SystemColors.ControlLight;
             this.toolStrip1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -108,6 +109,7 @@
             this.toolStripButton1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.toolStripButton1.Image = global::slauncher.Properties.Resources.FormatDocument_16x;
+            this.toolStripButton1.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton1.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
             this.toolStripButton1.Name = "toolStripButton1";
@@ -121,6 +123,7 @@
             this.configBtn.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.configBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.configBtn.Image = global::slauncher.Properties.Resources.Edit_16x;
+            this.configBtn.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.configBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.configBtn.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
             this.configBtn.Name = "configBtn";

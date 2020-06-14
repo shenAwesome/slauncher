@@ -91,6 +91,11 @@ namespace slauncher
 
         private class MyRenderer : ToolStripProfessionalRenderer
         {
+            public MyRenderer()
+            {
+                this.RoundedEdges = false;
+            }
+
             protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
             {
                 // Do nothing

@@ -75,7 +75,19 @@ namespace slauncher
                 fixLocation.Invoke();
             });  
             */
+
+            GlobaNotePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                , "slauncherNote.txt");
+
+            if (!File.Exists(GlobaNotePath))
+            {
+                string[] lines = { "A global note", "For keeping information you use often" };
+                File.WriteAllLines(GlobaNotePath, lines);
+            }
         }
+
+        readonly string GlobaNotePath;
 
         private class MyRenderer : ToolStripProfessionalRenderer
         {
@@ -264,7 +276,10 @@ namespace slauncher
                 TopMost = false;
             }));
 
-            FixLocation();
+            BeginInvoke((Action)delegate ()
+            {
+                FixLocation();
+            }); 
         }
 
         private readonly FileSystemWatcher Watcher = new FileSystemWatcher()
@@ -459,12 +474,6 @@ namespace slauncher
             LoadCmd();
         }
 
-        private void EditBtn_Click(object sender, EventArgs e)
-        {
-            var editor = @"C:\Program Files (x86)\Notepad++\notepad++.exe";
-            if (!File.Exists(editor)) editor = "notepad";
-            Process.Start(editor, '"' + FilePath + '"');
-        }
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -551,8 +560,8 @@ namespace slauncher
         private void toolStripLabel1_Click(object sender, EventArgs e)
         {
 
-        } 
-       
+        }
+
 
         private void FixLocation()
         {
@@ -572,7 +581,30 @@ namespace slauncher
 
         private void Form1_LocationChanged(object sender, EventArgs e)
         {
-          
+
+        }
+
+
+        public string NotePadExe
+        {
+            get
+            {
+                var editor = @"C:\Program Files (x86)\Notepad++\notepad++.exe";
+                if (!File.Exists(editor)) editor = "notepad";
+                return editor;
+            } 
+        }
+
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            Process.Start(NotePadExe, '"' + GlobaNotePath + '"');
+        }
+
+
+        private void EditBtn_Click(object sender, EventArgs e)
+        {  
+            Process.Start(NotePadExe, '"' + FilePath + '"');
         }
     }
 }

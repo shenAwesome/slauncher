@@ -123,6 +123,16 @@ namespace slauncher.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Edit_16x {
+            get {
+                object obj = ResourceManager.GetObject("Edit_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap exe {
             get {
                 object obj = ResourceManager.GetObject("exe", resourceCulture);
@@ -146,6 +156,16 @@ namespace slauncher.Properties {
         internal static System.Drawing.Bitmap FolderOpened_16x {
             get {
                 object obj = ResourceManager.GetObject("FolderOpened_16x", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap FormatDocument_16x {
+            get {
+                object obj = ResourceManager.GetObject("FormatDocument_16x", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

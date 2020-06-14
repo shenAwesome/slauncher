@@ -33,9 +33,10 @@
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.msgLabel = new System.Windows.Forms.ToolStripLabel();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
-            this.configBtn = new System.Windows.Forms.ToolStripButton();
             this.buttonListPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.emptyMessage = new System.Windows.Forms.Label();
+            this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+            this.configBtn = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -52,11 +53,12 @@
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.msgLabel,
             this.toolStripProgressBar1,
+            this.toolStripButton1,
             this.configBtn});
             this.toolStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            this.toolStrip1.Location = new System.Drawing.Point(3, 219);
+            this.toolStrip1.Location = new System.Drawing.Point(3, 218);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(230, 30);
+            this.toolStrip1.Size = new System.Drawing.Size(230, 31);
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
             this.toolStrip1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.toolStrip1_ItemClicked);
@@ -65,26 +67,14 @@
             // 
             this.msgLabel.Margin = new System.Windows.Forms.Padding(0);
             this.msgLabel.Name = "msgLabel";
-            this.msgLabel.Size = new System.Drawing.Size(67, 30);
+            this.msgLabel.Size = new System.Drawing.Size(67, 31);
             this.msgLabel.Text = "message";
             // 
             // toolStripProgressBar1
             // 
             this.toolStripProgressBar1.Margin = new System.Windows.Forms.Padding(1);
             this.toolStripProgressBar1.Name = "toolStripProgressBar1";
-            this.toolStripProgressBar1.Size = new System.Drawing.Size(67, 28);
-            // 
-            // configBtn
-            // 
-            this.configBtn.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.configBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.configBtn.Image = global::slauncher.Properties.Resources.configure;
-            this.configBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.configBtn.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
-            this.configBtn.Name = "configBtn";
-            this.configBtn.Size = new System.Drawing.Size(29, 29);
-            this.configBtn.Text = "Configure";
-            this.configBtn.Click += new System.EventHandler(this.EditBtn_Click);
+            this.toolStripProgressBar1.Size = new System.Drawing.Size(67, 29);
             // 
             // buttonListPanel
             // 
@@ -92,10 +82,10 @@
             this.buttonListPanel.BackColor = System.Drawing.SystemColors.Control;
             this.buttonListPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.buttonListPanel.Location = new System.Drawing.Point(3, 81);
-            this.buttonListPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonListPanel.Margin = new System.Windows.Forms.Padding(4);
             this.buttonListPanel.Name = "buttonListPanel";
             this.buttonListPanel.Padding = new System.Windows.Forms.Padding(0, 6, 13, 0);
-            this.buttonListPanel.Size = new System.Drawing.Size(230, 138);
+            this.buttonListPanel.Size = new System.Drawing.Size(230, 137);
             this.buttonListPanel.TabIndex = 0;
             this.buttonListPanel.WrapContents = false;
             // 
@@ -113,6 +103,32 @@
             this.emptyMessage.Text = "Drag file/folder and drop here";
             this.emptyMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // toolStripButton1
+            // 
+            this.toolStripButton1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButton1.Image = global::slauncher.Properties.Resources.FormatDocument_16x;
+            this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButton1.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
+            this.toolStripButton1.Name = "toolStripButton1";
+            this.toolStripButton1.Size = new System.Drawing.Size(29, 30);
+            this.toolStripButton1.Text = "Note";
+            this.toolStripButton1.ToolTipText = "Open global note";
+            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click);
+            // 
+            // configBtn
+            // 
+            this.configBtn.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.configBtn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.configBtn.Image = global::slauncher.Properties.Resources.Edit_16x;
+            this.configBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.configBtn.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
+            this.configBtn.Name = "configBtn";
+            this.configBtn.Size = new System.Drawing.Size(29, 30);
+            this.configBtn.Text = "Configure launcher";
+            this.configBtn.ToolTipText = "Configure this launcher";
+            this.configBtn.Click += new System.EventHandler(this.EditBtn_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -124,7 +140,7 @@
             this.Controls.Add(this.emptyMessage);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Form1";
@@ -151,6 +167,7 @@
         private System.Windows.Forms.ToolStripButton configBtn;
         private System.Windows.Forms.FlowLayoutPanel buttonListPanel;
         private System.Windows.Forms.Label emptyMessage;
+        private System.Windows.Forms.ToolStripButton toolStripButton1;
     }
 }
 

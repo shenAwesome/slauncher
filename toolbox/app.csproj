@@ -139,6 +139,8 @@
     <Content Include="icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\Edit_16x.png" />
+    <None Include="Resources\FormatDocument_16x.png" />
     <None Include="Resources\Web_blue_16x.png" />
     <None Include="Resources\Application_16x.png" />
     <None Include="Resources\FolderOpened_16x.png" />

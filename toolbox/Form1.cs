@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 namespace slauncher
 {
@@ -23,8 +22,26 @@ namespace slauncher
             return char.ToUpper(s[0]) + s.Substring(1);
         }
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
+        private const int MOUSEEVENTF_LEFTDOWN = 0x02;
+        private const int MOUSEEVENTF_LEFTUP = 0x04;
+        private const int WM_PARENTNOTIFY = 0x210;
+        private const int WM_LBUTTONDOWN = 0x201;
+
         protected override void WndProc(ref Message m)
         {
+            //to fix toolstrip issue
+            if (m.Msg == WM_PARENTNOTIFY)
+            {
+                if (m.WParam.ToInt32() == WM_LBUTTONDOWN && ActiveForm != this)
+                {
+                    Point p = PointToClient(Cursor.Position);
+                    if (GetChildAtPoint(p) is ToolStrip)
+                        mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)p.X, (uint)p.Y, 0, 0);
+                }
+            }
+
             if (m.Msg == 100)
             {
                 ShowMe();
@@ -55,26 +72,14 @@ namespace slauncher
             buttonListPanel.FlowDirection = FlowDirection.TopDown;
             buttonListPanel.WrapContents = false;
 
-            toolStripProgressBar1.Visible = false;
+            progressBar.Visible = false;
             msgLabel.Visible = false;
 
             toolStrip1.CreateControl();
             toolStrip1.Renderer = new MyRenderer();
 
-            //Watcher.Changed += OnFileChanged;
-
             var loadCmd = new Debouncer(TimeSpan.FromSeconds(.2), LoadCmd);
-            Watcher.Changed += (object source, FileSystemEventArgs evt) =>
-            {
-                loadCmd.Invoke();
-            };
-
-            /*
-            var fixLocation = new Debouncer(TimeSpan.FromSeconds(.2), FixLocation); 
-            this.LocationChanged += new System.EventHandler((object sender, EventArgs e) => {
-                fixLocation.Invoke();
-            });  
-            */
+            Watcher.Changed += (object source, FileSystemEventArgs evt) => loadCmd.Invoke();
 
             GlobaNotePath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
@@ -82,7 +87,10 @@ namespace slauncher
 
             if (!File.Exists(GlobaNotePath))
             {
-                string[] lines = { "A global note", "For keeping information you use often" };
+                string[] lines = { "A global note.",
+                    "For keeping information you use often.",
+                    "-config:console,async"
+                };
                 File.WriteAllLines(GlobaNotePath, lines);
             }
         }
@@ -108,8 +116,8 @@ namespace slauncher
             GC.SuppressFinalize(this);
         }
 
-        private Dictionary<string, List<string>> Commands = new Dictionary<string, List<string>>();
-        private Dictionary<string, Dictionary<string, string>> Configs = new Dictionary<string, Dictionary<string, string>>();
+        private readonly Dictionary<string, List<string>> Commands = new Dictionary<string, List<string>>();
+        private readonly Dictionary<string, List<string>> Configs = new Dictionary<string, List<string>>();
 
 
         public string FilePath = "";
@@ -121,7 +129,7 @@ namespace slauncher
         }
         private void LoadCmd()
         {
-            if (String.IsNullOrEmpty(FilePath)) FilePath = Properties.Settings.Default.LastFile;
+            if (string.IsNullOrEmpty(FilePath)) FilePath = Properties.Settings.Default.LastFile;
 
             if (!File.Exists(FilePath))
             {
@@ -171,26 +179,18 @@ namespace slauncher
                 var line = _line.Trim();
                 if (line.StartsWith("#"))
                 {
-                    var parts = line.Substring(1).Trim().Split('-');
+                    var parts = line.Substring(1).Trim().Split(new string[] { "-config:" }, StringSplitOptions.None);
                     btnCmd = FirstCharToUpper(parts[0].Trim());
 
                     Commands[btnCmd] = new List<string>();
-                    Configs[btnCmd] = new Dictionary<string, string>();
-                    parts = parts.Skip(1).Take(parts.Length - 1).ToArray();
-                    foreach (var p in parts)
+                    Configs[btnCmd] = new List<string>();
+                    if (parts.Length > 1)
                     {
-                        var sec = p.Trim();
-                        var firstIdx = sec.IndexOf(' ');
-                        if (firstIdx > 1)
+                        foreach (var p in parts[1].Split(','))
                         {
-                            var key = p.Substring(0, firstIdx).Trim();
-                            var value = p.Substring(firstIdx).Trim();
-                            Configs[btnCmd].Add(key, value);
+                            Configs[btnCmd].Add(p.Trim());
                         }
-                        else
-                        {
-                            Configs[btnCmd].Add(sec, "default");
-                        }
+
                     }
 
                     var btn = new NoFocusCueButton()
@@ -230,26 +230,35 @@ namespace slauncher
                 if (cmds.Count == 1)
                 {
                     var cmd = cmds[0].ToLower();
+
+                    var icon = Properties.Resources.file;
+
                     if (cmd.StartsWith("http"))
                     {
-                        btn.Image = global::slauncher.Properties.Resources.Web_blue_16x;
+                        icon = Properties.Resources.web;
                     }
                     else if (cmd.Contains(".bat"))
                     {
-                        btn.Image = global::slauncher.Properties.Resources.BatchFile_16x;
+                        icon = Properties.Resources.bat;
                     }
                     else if (Directory.Exists(cmd))
                     {
-                        btn.Image = global::slauncher.Properties.Resources.FolderOpened_16x;
+                        icon = Properties.Resources.folder;
                     }
                     else
                     {
-                        btn.Image = global::slauncher.Properties.Resources.Application_16x;
+                        try
+                        {
+                            var iconForFile = System.Drawing.Icon.ExtractAssociatedIcon(cmd);
+                            icon = new Bitmap(iconForFile.ToBitmap(), new Size(24, 24));
+                        }
+                        catch (Exception) { }
                     }
+                    btn.Image = icon;
                 }
             });
 
-            this.BeginInvoke((Action)(() =>
+            BeginInvoke((Action)(() =>
             {
                 emptyMessage.Visible = btns.Count == 0;
                 buttonListPanel.Controls.Clear();
@@ -257,7 +266,7 @@ namespace slauncher
                 if (btns.Any())
                 {
                     buttonListPanel.Controls.AddRange(btns.ToArray());
-                    var width = btns.Max(btn => btn.Width) + 15;
+                    var width = btns.Max(btn => btn.Width) + 20;
                     btns.ForEach(btn => btn.Width = width);
                     var height = btns.Last().Bottom + toolStrip1.Height + 50;
 
@@ -279,12 +288,9 @@ namespace slauncher
                 TopMost = true;
                 Thread.Sleep(1);
                 TopMost = false;
-            }));
 
-            BeginInvoke((Action)delegate ()
-            {
                 FixLocation();
-            }); 
+            }));
         }
 
         private readonly FileSystemWatcher Watcher = new FileSystemWatcher()
@@ -343,8 +349,8 @@ namespace slauncher
             {
                 Command = (sender as Button).Text;
 
-                toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
-                toolStripProgressBar1.Visible = true;
+                progressBar.Style = ProgressBarStyle.Marquee;
+                progressBar.Visible = true;
                 msgLabel.Text = Command;
                 msgLabel.Visible = true;
 
@@ -395,11 +401,6 @@ namespace slauncher
             Properties.Settings.Default.Save();
         }
 
-        private void buttonListPanel_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
         private void BackgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             var config = Configs[Command];
@@ -411,7 +412,7 @@ namespace slauncher
             var showConsole = true;
             //hide console smartly
             if (cmds.Count() == 1 && !cmds.First().Contains(".bat")) showConsole = false;
-            if (config.ContainsKey("r")) showConsole = true;
+            if (config.Contains("console")) showConsole = true;
 
             if (showConsole)
             {
@@ -435,7 +436,7 @@ namespace slauncher
             }
 
             process.Start();
-            if (config.ContainsKey("a")) //async
+            if (config.Contains("async")) //async
             {
                 process.Close();
                 Log = string.Join(",", cmds);
@@ -443,10 +444,14 @@ namespace slauncher
             else
             {
                 process.WaitForExit();
-                string output = process.StandardOutput.ReadToEnd();
-                string error = process.StandardError.ReadToEnd();
+                try
+                {
+                    string output = process.StandardOutput.ReadToEnd();
+                    string error = process.StandardError.ReadToEnd();
+                    Log = output + error;
+                }
+                catch (Exception) { }
                 process.Close();
-                Log = output + error;
             }
         }
 
@@ -454,7 +459,7 @@ namespace slauncher
 
         private void BackgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            toolStripProgressBar1.Visible = false;
+            progressBar.Visible = false;
             msgLabel.Visible = false;
             //infoBtn.Visible = true;
 
@@ -477,17 +482,6 @@ namespace slauncher
         private void ToolStripDropDownButton1_Click_1(object sender, EventArgs e)
         {
             LoadCmd();
-        }
-
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void panel1_DragEnter(object sender, DragEventArgs e)
-        {
-            MessageBox.Show("o");
         }
 
         private void Form1_DragEnter(object sender, DragEventArgs e)
@@ -557,16 +551,6 @@ namespace slauncher
             return dialogResult;
         }
 
-        private void toolStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
-        {
-
-        }
-
-        private void toolStripLabel1_Click(object sender, EventArgs e)
-        {
-
-        }
-
 
         private void FixLocation()
         {
@@ -584,32 +568,32 @@ namespace slauncher
                 this.Top = screen.Bounds.Top;
         }
 
-        private void Form1_LocationChanged(object sender, EventArgs e)
-        {
-
-        }
-
 
         public string NotePadExe
         {
             get
             {
-                var editor = @"C:\Program Files (x86)\Notepad++\notepad++.exe";
-                if (!File.Exists(editor)) editor = "notepad";
+                string[] candidates = {
+                    @"C:\Program Files (x86)\Notepad++\notepad++.exe",
+                    @"C:\Program Files\Notepad++\notepad++.exe"
+                };
+                var editor = candidates.FirstOrDefault(c => File.Exists(c));
+                if (editor == null) editor = "notepad";
                 return editor;
-            } 
-        }
-
-
-        private void toolStripButton1_Click(object sender, EventArgs e)
-        {
-            Process.Start(NotePadExe, '"' + GlobaNotePath + '"');
+            }
         }
 
 
         private void EditBtn_Click(object sender, EventArgs e)
-        {  
+        {
             Process.Start(NotePadExe, '"' + FilePath + '"');
         }
+
+        private void NoteBtn_Click(object sender, EventArgs e)
+        {
+            Process.Start(NotePadExe, '"' + GlobaNotePath + '"');
+        }
+
     }
+
 }

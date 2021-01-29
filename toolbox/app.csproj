@@ -139,6 +139,10 @@
     <Content Include="icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\file.png" />
+    <None Include="Resources\bat.png" />
+    <None Include="Resources\web.png" />
+    <None Include="Resources\folder.png" />
     <None Include="Resources\Edit_16x.png" />
     <None Include="Resources\FormatDocument_16x.png" />
     <None Include="Resources\Web_blue_16x.png" />
@@ -154,9 +158,6 @@
     <None Include="Resources\BehaviorAction_16x.png" />
     <None Include="Resources\plus.png" />
     <None Include="Resources\exe.png" />
-    <None Include="Resources\bat.png" />
-    <None Include="Resources\web.png" />
-    <None Include="Resources\folder.png" />
     <None Include="Resources\service.png" />
     <None Include="Resources\command.png" />
     <None Include="Resources\web2.png" />

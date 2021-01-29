@@ -274,6 +274,9 @@ namespace slauncher
                     Rectangle area = myScreen.WorkingArea;
                     Width = Math.Min(width + 30, area.Width / 2);
                     Height = Math.Max(200, Math.Min(height, area.Height - 50));
+                    //when too many items
+                    var overflow = height > area.Height - 50;
+                    if (overflow) Width += 20;
                 }
                 else
                 {
@@ -303,7 +306,6 @@ namespace slauncher
             try
             {
                 Watcher.EnableRaisingEvents = false;
-                //Watcher.Path = FilePath;
                 Watcher.Path = Path.GetDirectoryName(FilePath);
                 Watcher.Filter = Path.GetFileName(FilePath);
                 Watcher.EnableRaisingEvents = true;

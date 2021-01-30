@@ -289,9 +289,7 @@ namespace slauncher
                     var width = btns.Max(btn => btn.Width) + 20;
                     btns.ForEach(btn => btn.Width = width);
                     var height = btns.Last().Bottom + toolStrip1.Height + 50;
-
-                    Screen myScreen = Screen.FromControl(this);
-                    Rectangle area = myScreen.WorkingArea;
+                    Rectangle area = Screen.FromControl(this).WorkingArea;
                     Width = Math.Min(width + 30, area.Width / 2);
                     Height = Math.Max(200, Math.Min(height, area.Height - 50));
                     //when too many items
@@ -344,7 +342,6 @@ namespace slauncher
         }
 
         readonly string BatFileName = Path.Combine(Path.GetTempPath(), "_temp.bat");
-        //string BatFileName = Path.Combine(Path.GetTempPath(), "_temp.bat"); 
         private string Enhance(string cmd, List<string> config)
         {
             var cmd_low = cmd.ToLower();
@@ -492,16 +489,6 @@ namespace slauncher
             {
                 (btn as Button).Enabled = true;
             }
-        }
-
-        private void ToolStripSplitButton1_ButtonClick(object sender, EventArgs e)
-        {
-            MessageBox.Show(Log);
-        }
-
-        private void ToolStripDropDownButton1_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show(Log);
         }
 
         private void ToolStripDropDownButton1_Click_1(object sender, EventArgs e)

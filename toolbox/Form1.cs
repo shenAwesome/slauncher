@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 namespace slauncher
@@ -127,6 +128,13 @@ namespace slauncher
             FilePath = path;
             LoadCmd();
         }
+
+
+        private bool IsUNC(string path)
+        {
+            return Uri.TryCreate(path, UriKind.Absolute, out Uri uri) && uri.IsUnc;
+        }
+
         private void LoadCmd()
         {
             if (string.IsNullOrEmpty(FilePath)) FilePath = Properties.Settings.Default.LastFile;
@@ -188,9 +196,8 @@ namespace slauncher
                     {
                         foreach (var p in parts[1].Split(','))
                         {
-                            Configs[btnCmd].Add(p.Trim());
+                            Configs[btnCmd].Add(p.Trim().ToLower());
                         }
-
                     }
 
                     var btn = new NoFocusCueButton()
@@ -226,20 +233,26 @@ namespace slauncher
             btns.ForEach(btn =>
             {
                 var cmds = Commands[btn.Text];
-
+                var icon = Properties.Resources.file;
                 if (cmds.Count == 1)
                 {
                     var cmd = cmds[0].ToLower();
-
-                    var icon = Properties.Resources.file;
 
                     if (cmd.StartsWith("http"))
                     {
                         icon = Properties.Resources.web;
                     }
+                    else if (cmd.StartsWith("notepad"))
+                    {
+                        icon = Properties.Resources.text;
+                    }
                     else if (cmd.Contains(".bat"))
                     {
                         icon = Properties.Resources.bat;
+                    }
+                    else if (IsUNC(cmd))
+                    {
+                        icon = Properties.Resources.sharedFolder;
                     }
                     else if (Directory.Exists(cmd))
                     {
@@ -249,13 +262,20 @@ namespace slauncher
                     {
                         try
                         {
-                            var iconForFile = System.Drawing.Icon.ExtractAssociatedIcon(cmd);
-                            icon = new Bitmap(iconForFile.ToBitmap(), new Size(24, 24));
+                            var testPath = cmd.Trim();
+                            if (testPath.StartsWith("\""))
+                            {
+                                var result = from Match match in Regex.Matches(testPath, "\"([^\"]*)\"")
+                                             select match.ToString();
+                                testPath = result.First().Replace("\"", "");
+                            }
+                            var iconForFile = Icon.ExtractAssociatedIcon(testPath);
+                            if (iconForFile != null) icon = new Bitmap(iconForFile.ToBitmap(), new Size(24, 24));
                         }
                         catch (Exception) { }
                     }
-                    btn.Image = icon;
                 }
+                btn.Image = icon;
             });
 
             BeginInvoke((Action)(() =>
@@ -325,7 +345,7 @@ namespace slauncher
 
         readonly string BatFileName = Path.Combine(Path.GetTempPath(), "_temp.bat");
         //string BatFileName = Path.Combine(Path.GetTempPath(), "_temp.bat"); 
-        private string Enhance(string cmd)
+        private string Enhance(string cmd, List<string> config)
         {
             var cmd_low = cmd.ToLower();
             if (cmd_low.StartsWith("http") || cmd_low.StartsWith(@"\\")
@@ -336,8 +356,9 @@ namespace slauncher
 
             if (cmd_low.StartsWith("notepad "))
             {
-                var npPath = @"C:\Program Files (x86)\Notepad++\notepad++.exe";
-                cmd = String.Format("\"{0}\" {1}", npPath, cmd_low.Replace("notepad ", ""));
+                cmd = String.Format("\"{0}\" {1}", NotePadExe,
+                    cmd_low.Replace("notepad ", ""));
+                if (!config.Contains("async")) config.Add("async");
             }
 
             return cmd;
@@ -406,7 +427,7 @@ namespace slauncher
         private void BackgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             var config = Configs[Command];
-            var cmds = Commands[Command].Select(cmd => Enhance(cmd));
+            var cmds = Commands[Command].Select(cmd => Enhance(cmd, config));
             File.WriteAllLines(BatFileName, cmds);
             Process process = new Process();
             var workingDir = Path.GetDirectoryName(FilePath);
@@ -429,17 +450,19 @@ namespace slauncher
                 process.StartInfo = new ProcessStartInfo
                 {
                     WorkingDirectory = workingDir,
+                    FileName = BatFileName,
                     UseShellExecute = false,
                     CreateNoWindow = true,
-                    FileName = BatFileName,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true
                 };
             }
 
             process.Start();
+
             if (config.Contains("async")) //async
             {
+                Thread.Sleep(1000);
                 process.Close();
                 Log = string.Join(",", cmds);
             }

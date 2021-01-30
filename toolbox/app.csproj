@@ -50,6 +50,15 @@
   <PropertyGroup>
     <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>0A6A68E32E71EB6299F06B1D03E3EA8FB3E91178</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>app_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
@@ -109,6 +118,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -139,10 +149,13 @@
     <Content Include="icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\sharedFolder.png" />
+    <None Include="Resources\web.png" />
+    <None Include="Resources\text.png" />
+    <None Include="Resources\folder.png" />
     <None Include="Resources\file.png" />
     <None Include="Resources\bat.png" />
-    <None Include="Resources\web.png" />
-    <None Include="Resources\folder.png" />
+    <None Include="Resources\edit.png" />
     <None Include="Resources\Edit_16x.png" />
     <None Include="Resources\FormatDocument_16x.png" />
     <None Include="Resources\Web_blue_16x.png" />
@@ -164,7 +177,6 @@
     <None Include="Resources\page.png" />
     <None Include="Resources\configure.png" />
     <None Include="Resources\config.png" />
-    <None Include="Resources\edit.png" />
     <None Include="Resources\Image1.png" />
     <None Include="Resources\iconURL.bmp" />
   </ItemGroup>

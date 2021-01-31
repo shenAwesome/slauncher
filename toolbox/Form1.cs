@@ -144,7 +144,8 @@ namespace slauncher
                 var dlg = new SaveFileDialog
                 {
                     Filter = "Launcher Configure|*.sl",
-                    Title = "Create a new launcher"
+                    Title = "Create a new launcher",
+                    OverwritePrompt = false
                 };
                 if (Directory.Exists(FilePath))
                 {

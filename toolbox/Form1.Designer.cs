@@ -57,9 +57,9 @@
             this.noteBtn,
             this.configBtn});
             this.toolStrip1.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            this.toolStrip1.Location = new System.Drawing.Point(2, 259);
+            this.toolStrip1.Location = new System.Drawing.Point(3, 328);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(236, 26);
+            this.toolStrip1.Size = new System.Drawing.Size(270, 32);
             this.toolStrip1.TabIndex = 0;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -67,14 +67,14 @@
             // 
             this.msgLabel.Margin = new System.Windows.Forms.Padding(0);
             this.msgLabel.Name = "msgLabel";
-            this.msgLabel.Size = new System.Drawing.Size(53, 26);
+            this.msgLabel.Size = new System.Drawing.Size(67, 32);
             this.msgLabel.Text = "message";
             // 
             // progressBar
             // 
             this.progressBar.Margin = new System.Windows.Forms.Padding(1);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(50, 24);
+            this.progressBar.Size = new System.Drawing.Size(67, 30);
             // 
             // noteBtn
             // 
@@ -85,7 +85,7 @@
             this.noteBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.noteBtn.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
             this.noteBtn.Name = "noteBtn";
-            this.noteBtn.Size = new System.Drawing.Size(23, 25);
+            this.noteBtn.Size = new System.Drawing.Size(29, 31);
             this.noteBtn.Text = "Note";
             this.noteBtn.ToolTipText = "Open global note";
             this.noteBtn.Click += new System.EventHandler(this.NoteBtn_Click);
@@ -99,7 +99,7 @@
             this.configBtn.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.configBtn.Margin = new System.Windows.Forms.Padding(0, 1, 0, 0);
             this.configBtn.Name = "configBtn";
-            this.configBtn.Size = new System.Drawing.Size(23, 25);
+            this.configBtn.Size = new System.Drawing.Size(29, 31);
             this.configBtn.Text = "Configure launcher";
             this.configBtn.ToolTipText = "Configure this launcher";
             this.configBtn.Click += new System.EventHandler(this.EditBtn_Click);
@@ -109,41 +109,46 @@
             this.buttonListPanel.AutoScroll = true;
             this.buttonListPanel.BackColor = System.Drawing.SystemColors.Control;
             this.buttonListPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.buttonListPanel.Location = new System.Drawing.Point(2, 66);
+            this.buttonListPanel.Location = new System.Drawing.Point(3, 81);
+            this.buttonListPanel.Margin = new System.Windows.Forms.Padding(0);
             this.buttonListPanel.Name = "buttonListPanel";
-            this.buttonListPanel.Padding = new System.Windows.Forms.Padding(0, 5, 10, 0);
-            this.buttonListPanel.Size = new System.Drawing.Size(236, 193);
+            this.buttonListPanel.Padding = new System.Windows.Forms.Padding(0, 2, 0, 0);
+            this.buttonListPanel.Size = new System.Drawing.Size(270, 247);
             this.buttonListPanel.TabIndex = 0;
             this.buttonListPanel.WrapContents = false;
             // 
             // emptyMessage
             // 
+            this.emptyMessage.AutoEllipsis = true;
+            this.emptyMessage.BackColor = System.Drawing.SystemColors.Control;
             this.emptyMessage.Dock = System.Windows.Forms.DockStyle.Top;
             this.emptyMessage.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.emptyMessage.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.emptyMessage.ForeColor = System.Drawing.SystemColors.MenuHighlight;
-            this.emptyMessage.Location = new System.Drawing.Point(2, 2);
+            this.emptyMessage.Location = new System.Drawing.Point(3, 2);
+            this.emptyMessage.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.emptyMessage.Name = "emptyMessage";
-            this.emptyMessage.Size = new System.Drawing.Size(236, 64);
+            this.emptyMessage.Size = new System.Drawing.Size(270, 79);
             this.emptyMessage.TabIndex = 0;
             this.emptyMessage.Text = "Drag file/folder and drop here";
             this.emptyMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(240, 287);
+            this.ClientSize = new System.Drawing.Size(276, 362);
             this.Controls.Add(this.buttonListPanel);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.emptyMessage);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Form1";
-            this.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Text = "SLauncher";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);

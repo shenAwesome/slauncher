@@ -282,19 +282,20 @@ namespace slauncher
             BeginInvoke((Action)(() =>
             {
                 emptyMessage.Visible = btns.Count == 0;
-                buttonListPanel.Controls.Clear();
                 buttonListPanel.Visible = false;
+                buttonListPanel.Controls.Clear();
                 if (btns.Any())
                 {
                     buttonListPanel.Controls.AddRange(btns.ToArray());
                     var width = btns.Max(btn => btn.Width) + 20;
                     btns.ForEach(btn => btn.Width = width);
                     var height = btns.Last().Bottom + toolStrip1.Height + 50;
-                    Rectangle area = Screen.FromControl(this).WorkingArea;
-                    Width = Math.Min(width + 30, area.Width / 2);
-                    Height = Math.Max(200, Math.Min(height, area.Height - 50));
+                    Rectangle window = Screen.FromControl(this).WorkingArea;
+                    var maxHeight = window.Height - 50;
+                    Width = Math.Min(width + 30, window.Width / 2);
+                    Height = Math.Max(200, Math.Min(height, maxHeight));
                     //when too many items
-                    var overflow = height > area.Height - 50;
+                    var overflow = height > maxHeight;
                     if (overflow) Width += 20;
                 }
                 else
@@ -302,15 +303,13 @@ namespace slauncher
                     Height = 200;
                     Width = 200;
                 }
-                Thread.Sleep(200);
-
+                Thread.Sleep(1);
+                buttonListPanel.Visible = true;
                 WatchFile();
                 BringToFront();
-                buttonListPanel.Visible = true;
                 TopMost = true;
                 Thread.Sleep(1);
                 TopMost = false;
-
                 FixLocation();
             }));
         }
@@ -368,22 +367,17 @@ namespace slauncher
         {
             try
             {
-                Command = (sender as Button).Text;
-
-                progressBar.Style = ProgressBarStyle.Marquee;
-                progressBar.Visible = true;
-                msgLabel.Text = Command;
-                msgLabel.Visible = true;
-
                 if (!backgroundWorker1.IsBusy)
                 {
+                    Command = (sender as Button).Text;
+                    progressBar.Style = ProgressBarStyle.Marquee;
+                    progressBar.Visible = true;
+                    msgLabel.Text = Command;
+                    msgLabel.Visible = true;
+
                     backgroundWorker1.RunWorkerAsync();
-                    foreach (var btn in buttonListPanel.Controls)
-                    {
-                        (btn as Button).Enabled = false;
-                    }
+                    (sender as Button).Select();
                 }
-                (sender as Button).Select();
             }
             catch (Exception)
             {

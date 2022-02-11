@@ -241,7 +241,9 @@ namespace slauncher {
                     buttonListPanel.Controls.AddRange(btns.ToArray());
                     var width = btns.Max(btn => btn.Width) + 20;
                     btns.ForEach(btn => btn.Width = width);
-                    var height = btns.Last().Bottom + toolStrip1.Height + 52;
+                    var height = btns.Last().Bottom + toolStrip1.Height + 48;
+                    height = height / 2 * 2;
+
                     Rectangle window = Screen.FromControl(this).WorkingArea;
                     var maxHeight = window.Height - 50;
                     Width = Math.Min(width + 30, window.Width / 2);

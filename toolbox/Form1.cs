@@ -10,15 +10,12 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
-namespace slauncher
-{
+namespace slauncher {
 
 
-    public partial class Form1 : Form, IDisposable
-    {
+    public partial class Form1 : Form, IDisposable {
 
-        public static string FirstCharToUpper(string s)
-        {
+        public static string FirstCharToUpper(string s) {
             if (string.IsNullOrEmpty(s) || s.Length < 1) return s;
             return char.ToUpper(s[0]) + s.Substring(1);
         }
@@ -30,34 +27,27 @@ namespace slauncher
         private const int WM_PARENTNOTIFY = 0x210;
         private const int WM_LBUTTONDOWN = 0x201;
 
-        protected override void WndProc(ref Message m)
-        {
+        protected override void WndProc(ref Message m) {
             //to fix toolstrip issue
-            if (m.Msg == WM_PARENTNOTIFY)
-            {
-                if (m.WParam.ToInt32() == WM_LBUTTONDOWN && ActiveForm != this)
-                {
+            if (m.Msg == WM_PARENTNOTIFY) {
+                if (m.WParam.ToInt32() == WM_LBUTTONDOWN && ActiveForm != this) {
                     Point p = PointToClient(Cursor.Position);
                     if (GetChildAtPoint(p) is ToolStrip)
                         mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)p.X, (uint)p.Y, 0, 0);
                 }
             }
 
-            if (m.Msg == 100)
-            {
+            if (m.Msg == 100) {
                 ShowMe();
             }
-            if (m.Msg == MessageHelper.WM_COPYDATA)
-            {
+            if (m.Msg == MessageHelper.WM_COPYDATA) {
                 LoadCmd(MessageHelper.ReadStr(m));
                 ShowMe();
             }
             base.WndProc(ref m);
         }
-        private void ShowMe()
-        {
-            if (WindowState == FormWindowState.Minimized)
-            {
+        private void ShowMe() {
+            if (WindowState == FormWindowState.Minimized) {
                 WindowState = FormWindowState.Normal;
             }
             bool top = TopMost;
@@ -65,8 +55,7 @@ namespace slauncher
             TopMost = top;
         }
 
-        public Form1()
-        {
+        public Form1() {
             InitializeComponent();
 
             buttonListPanel.AutoScroll = true;
@@ -86,8 +75,7 @@ namespace slauncher
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
                 , "slauncherNote.txt");
 
-            if (!File.Exists(GlobaNotePath))
-            {
+            if (!File.Exists(GlobaNotePath)) {
                 string[] lines = { "A global note.",
                     "For keeping information you use often.",
                     "-config:console,async"
@@ -98,21 +86,17 @@ namespace slauncher
 
         readonly string GlobaNotePath;
 
-        private class MyRenderer : ToolStripProfessionalRenderer
-        {
-            public MyRenderer()
-            {
+        private class MyRenderer : ToolStripProfessionalRenderer {
+            public MyRenderer() {
                 this.RoundedEdges = false;
             }
 
-            protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
-            {
+            protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) {
                 // Do nothing
             }
         }
 
-        public new void Dispose()
-        {
+        public new void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -123,43 +107,63 @@ namespace slauncher
 
         public string FilePath = "";
 
-        private void LoadCmd(string path)
-        {
+        private void LoadCmd(string path) {
             FilePath = path;
             LoadCmd();
         }
 
 
-        private bool IsUNC(string path)
-        {
+        private bool IsUNC(string path) {
             return Uri.TryCreate(path, UriKind.Absolute, out Uri uri) && uri.IsUnc;
         }
 
-        private void LoadCmd()
-        {
+        private Bitmap GetIcon(string cmd) {
+            Bitmap icon = null;
+            if (cmd.StartsWith("http")) {
+                icon = Properties.Resources.web;
+            } else if (cmd.StartsWith("code")) {
+                icon = Properties.Resources.vscode;
+            } else if (cmd.StartsWith("notepad")) {
+                icon = Properties.Resources.text;
+            } else if (cmd.Contains(".bat")) {
+                icon = Properties.Resources.bat;
+            } else if (IsUNC(cmd)) {
+                icon = Properties.Resources.sharedFolder;
+            } else if (Directory.Exists(cmd)) {
+                icon = Properties.Resources.folder;
+            } else {
+                try {
+                    var testPath = cmd.Trim();
+                    if (testPath.StartsWith("\"")) {
+                        var result = from Match match in Regex.Matches(testPath, "\"([^\"]*)\"")
+                                     select match.ToString();
+                        testPath = result.First().Replace("\"", "");
+                    }
+                    var iconForFile = Icon.ExtractAssociatedIcon(testPath);
+                    if (iconForFile != null) icon = new Bitmap(iconForFile.ToBitmap(), new Size(24, 24));
+                } catch (Exception) { }
+            }
+            return icon;
+        }
+
+        private void LoadCmd() {
             if (string.IsNullOrEmpty(FilePath)) FilePath = Properties.Settings.Default.LastFile;
 
-            if (!File.Exists(FilePath))
-            {
-                var dlg = new SaveFileDialog
-                {
+            if (!File.Exists(FilePath)) {
+                var dlg = new SaveFileDialog {
                     Filter = "Launcher Configure|*.sl",
                     Title = "Create a new launcher",
                     OverwritePrompt = false
                 };
-                if (Directory.Exists(FilePath))
-                {
+                if (Directory.Exists(FilePath)) {
                     dlg.FileName = "NewLauncher.sl";
                     dlg.InitialDirectory = FilePath;
                 }
 
-                if (dlg.ShowDialog() == DialogResult.OK)
-                {
+                if (dlg.ShowDialog() == DialogResult.OK) {
                     FilePath = dlg.FileName;
                     if (!File.Exists(FilePath)) File.WriteAllLines(FilePath, new string[0]);
-                }
-                else
-                {
+                } else {
                     Close();
                     return;
                 }
@@ -168,12 +172,9 @@ namespace slauncher
             Properties.Settings.Default.LastFile = FilePath;
 
             string[] lines = null;
-            try
-            {
+            try {
                 lines = File.ReadAllLines(FilePath);
-            }
-            catch (Exception)
-            {
+            } catch (Exception) {
 
             }
             if (lines == null) return;
@@ -183,26 +184,21 @@ namespace slauncher
             var btnCmd = "";
             var btns = new List<Button>();
 
-            foreach (var _line in lines)
-            {
+            foreach (var _line in lines) {
                 var line = _line.Trim();
-                if (line.StartsWith("#"))
-                {
+                if (line.StartsWith("#")) {
                     var parts = line.Substring(1).Trim().Split(new string[] { "-config:" }, StringSplitOptions.None);
                     btnCmd = FirstCharToUpper(parts[0].Trim());
 
                     Commands[btnCmd] = new List<string>();
                     Configs[btnCmd] = new List<string>();
-                    if (parts.Length > 1)
-                    {
-                        foreach (var p in parts[1].Split(','))
-                        {
+                    if (parts.Length > 1) {
+                        foreach (var p in parts[1].Split(',')) {
                             Configs[btnCmd].Add(p.Trim().ToLower());
                         }
                     }
 
-                    var btn = new NoFocusCueButton()
-                    {
+                    var btn = new NoFocusCueButton() {
                         Text = btnCmd,
                         Margin = new Padding(5, 0, 5, 0),
                         Padding = new Padding(0),
@@ -217,79 +213,35 @@ namespace slauncher
                     btn.FlatAppearance.BorderColor = SystemColors.Control;
                     btn.FlatAppearance.MouseOverBackColor = Color.Silver;
                     btns.Add(btn);
-                }
-                else
-                {
-                    if (line.Length > 0 && btnCmd.Length > 0)
-                    {
+                } else {
+                    if (line.Length > 0 && btnCmd.Length > 0) {
                         Commands[btnCmd].Add(line);
-                    }
-                    else
-                    {
+                    } else {
                         btnCmd = "";//stop command
                     }
                 }
             }
 
-            btns.ForEach(btn =>
-            {
+            btns.ForEach(btn => {
                 var cmds = Commands[btn.Text];
-                var icon = Properties.Resources.file;
-                if (cmds.Count == 1)
-                {
+                Bitmap icon = null;
+                if (cmds.Count == 1) {
                     var cmd = cmds[0].ToLower();
-
-                    if (cmd.StartsWith("http"))
-                    {
-                        icon = Properties.Resources.web;
-                    }
-                    else if (cmd.StartsWith("notepad"))
-                    {
-                        icon = Properties.Resources.text;
-                    }
-                    else if (cmd.Contains(".bat"))
-                    {
-                        icon = Properties.Resources.bat;
-                    }
-                    else if (IsUNC(cmd))
-                    {
-                        icon = Properties.Resources.sharedFolder;
-                    }
-                    else if (Directory.Exists(cmd))
-                    {
-                        icon = Properties.Resources.folder;
-                    }
-                    else
-                    {
-                        try
-                        {
-                            var testPath = cmd.Trim();
-                            if (testPath.StartsWith("\""))
-                            {
-                                var result = from Match match in Regex.Matches(testPath, "\"([^\"]*)\"")
-                                             select match.ToString();
-                                testPath = result.First().Replace("\"", "");
-                            }
-                            var iconForFile = Icon.ExtractAssociatedIcon(testPath);
-                            if (iconForFile != null) icon = new Bitmap(iconForFile.ToBitmap(), new Size(24, 24));
-                        }
-                        catch (Exception) { }
-                    }
+                    icon = GetIcon(cmd);
                 }
+                if (icon == null) icon = Properties.Resources.file;
                 btn.Image = icon;
             });
 
-            BeginInvoke((Action)(() =>
-            {
+            BeginInvoke((Action)(() => {
                 emptyMessage.Visible = btns.Count == 0;
                 buttonListPanel.Visible = false;
                 buttonListPanel.Controls.Clear();
-                if (btns.Any())
-                {
+                if (btns.Any()) {
                     buttonListPanel.Controls.AddRange(btns.ToArray());
                     var width = btns.Max(btn => btn.Width) + 20;
                     btns.ForEach(btn => btn.Width = width);
-                    var height = btns.Last().Bottom + toolStrip1.Height + 50;
+                    var height = btns.Last().Bottom + toolStrip1.Height + 52;
                     Rectangle window = Screen.FromControl(this).WorkingArea;
                     var maxHeight = window.Height - 50;
                     Width = Math.Min(width + 30, window.Width / 2);
@@ -297,9 +249,7 @@ namespace slauncher
                     //when too many items
                     var overflow = height > maxHeight;
                     if (overflow) Width += 20;
-                }
-                else
-                {
+                } else {
                     Height = 200;
                     Width = 200;
                 }
@@ -314,45 +264,36 @@ namespace slauncher
             }));
         }
 
-        private readonly FileSystemWatcher Watcher = new FileSystemWatcher()
-        {
+        private readonly FileSystemWatcher Watcher = new FileSystemWatcher() {
             NotifyFilter = NotifyFilters.LastWrite
         };
 
-        private void WatchFile()
-        {
-            try
-            {
+        private void WatchFile() {
+            try {
                 Watcher.EnableRaisingEvents = false;
                 Watcher.Path = Path.GetDirectoryName(FilePath);
                 Watcher.Filter = Path.GetFileName(FilePath);
                 Watcher.EnableRaisingEvents = true;
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 MessageBox.Show("watch error:" + e.ToString());
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
+        private void Form1_Load(object sender, EventArgs e) {
             AllowDrop = true;
             Location = Properties.Settings.Default.Location;
             LoadCmd();
         }
 
         readonly string BatFileName = Path.Combine(Path.GetTempPath(), "_temp.bat");
-        private string Enhance(string cmd, List<string> config)
-        {
+        private string Enhance(string cmd, List<string> config) {
             var cmd_low = cmd.ToLower();
             if (cmd_low.StartsWith("http") || cmd_low.StartsWith(@"\\")
-                || cmd_low.IndexOf(@":\") == 1)
-            {
+                || cmd_low.IndexOf(@":\") == 1) {
                 cmd = String.Format("start \"\" \"{0}\"", cmd);
             }
 
-            if (cmd_low.StartsWith("notepad "))
-            {
+            if (cmd_low.StartsWith("notepad ")) {
                 cmd = String.Format("\"{0}\" {1}", NotePadExe,
                     cmd_low.Replace("notepad ", ""));
                 if (!config.Contains("async")) config.Add("async");
@@ -363,12 +304,9 @@ namespace slauncher
 
         string Command = "";
 
-        private void BtnClick(object sender, System.EventArgs e)
-        {
-            try
-            {
-                if (!backgroundWorker1.IsBusy)
-                {
+        private void BtnClick(object sender, System.EventArgs e) {
+            try {
+                if (!backgroundWorker1.IsBusy) {
                     Command = (sender as Button).Text;
                     progressBar.Style = ProgressBarStyle.Marquee;
                     progressBar.Visible = true;
@@ -378,36 +316,27 @@ namespace slauncher
                     backgroundWorker1.RunWorkerAsync();
                     (sender as Button).Select();
                 }
-            }
-            catch (Exception)
-            {
+            } catch (Exception) {
                 LoadCmd();
             }
         }
 
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
-        {
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e) {
             File.Delete(BatFileName);
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (WindowState == FormWindowState.Maximized)
-            {
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+            if (WindowState == FormWindowState.Maximized) {
                 Properties.Settings.Default.Location = RestoreBounds.Location;
                 Properties.Settings.Default.Size = RestoreBounds.Size;
                 Properties.Settings.Default.Maximised = true;
                 Properties.Settings.Default.Minimised = false;
-            }
-            else if (WindowState == FormWindowState.Normal)
-            {
+            } else if (WindowState == FormWindowState.Normal) {
                 Properties.Settings.Default.Location = Location;
                 Properties.Settings.Default.Size = Size;
                 Properties.Settings.Default.Maximised = false;
                 Properties.Settings.Default.Minimised = false;
-            }
-            else
-            {
+            } else {
                 Properties.Settings.Default.Location = RestoreBounds.Location;
                 Properties.Settings.Default.Size = RestoreBounds.Size;
                 Properties.Settings.Default.Maximised = false;
@@ -416,8 +345,7 @@ namespace slauncher
             Properties.Settings.Default.Save();
         }
 
-        private void BackgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
-        {
+        private void BackgroundWorker1_DoWork(object sender, DoWorkEventArgs e) {
             var config = Configs[Command];
             var cmds = Commands[Command].Select(cmd => Enhance(cmd, config));
             File.WriteAllLines(BatFileName, cmds);
@@ -429,18 +357,14 @@ namespace slauncher
             if (cmds.Count() == 1 && !cmds.First().Contains(".bat")) showConsole = false;
             if (config.Contains("console")) showConsole = true;
 
-            if (showConsole)
-            {
-                process.StartInfo = new ProcessStartInfo
-                {
+            if (showConsole) {
+                process.StartInfo = new ProcessStartInfo {
                     WorkingDirectory = workingDir,
                     FileName = BatFileName
                 };
-            }
-            else //hide shell
-            {
-                process.StartInfo = new ProcessStartInfo
-                {
+            } else //hide shell
+              {
+                process.StartInfo = new ProcessStartInfo {
                     WorkingDirectory = workingDir,
                     FileName = BatFileName,
                     UseShellExecute = false,
@@ -457,56 +381,44 @@ namespace slauncher
                 Thread.Sleep(1000);
                 process.Close();
                 Log = string.Join(",", cmds);
-            }
-            else
-            {
+            } else {
                 process.WaitForExit();
-                try
-                {
+                try {
                     string output = process.StandardOutput.ReadToEnd();
                     string error = process.StandardError.ReadToEnd();
                     Log = output + error;
-                }
-                catch (Exception) { }
+                } catch (Exception) { }
                 process.Close();
             }
         }
 
         string Log = "";
 
-        private void BackgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
+        private void BackgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
             progressBar.Visible = false;
             msgLabel.Visible = false;
             //infoBtn.Visible = true;
 
-            foreach (var btn in buttonListPanel.Controls)
-            {
+            foreach (var btn in buttonListPanel.Controls) {
                 (btn as Button).Enabled = true;
             }
         }
 
-        private void ToolStripDropDownButton1_Click_1(object sender, EventArgs e)
-        {
+        private void ToolStripDropDownButton1_Click_1(object sender, EventArgs e) {
             LoadCmd();
         }
 
-        private void Form1_DragEnter(object sender, DragEventArgs e)
-        {
+        private void Form1_DragEnter(object sender, DragEventArgs e) {
             if (e.Data.GetDataPresent(DataFormats.FileDrop)) e.Effect = DragDropEffects.Copy;
         }
 
-        private void Form1_DragDrop(object sender, DragEventArgs e)
-        {
+        private void Form1_DragDrop(object sender, DragEventArgs e) {
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (var file in files)
-            {
+            foreach (var file in files) {
                 var name = Path.GetFileNameWithoutExtension(file);
                 var ret = InputBox("New shortcut", file, ref name);
-                if (ret == DialogResult.OK)
-                {
-                    using (StreamWriter w = File.AppendText(FilePath))
-                    {
+                if (ret == DialogResult.OK) {
+                    using (StreamWriter w = File.AppendText(FilePath)) {
                         w.WriteLine(" ");
                         w.WriteLine('#' + name);
                         w.WriteLine(file);
@@ -516,8 +428,7 @@ namespace slauncher
         }
 
 
-        public static DialogResult InputBox(string title, string promptText, ref string value)
-        {
+        public static DialogResult InputBox(string title, string promptText, ref string value) {
             Form form = new Form();
             Label label = new Label();
             TextBox textBox = new TextBox();
@@ -546,7 +457,7 @@ namespace slauncher
             form.ClientSize = new Size(396, 107);
             form.Controls.AddRange(new Control[] { label, textBox, buttonOk, buttonCancel });
             form.ClientSize = new Size(Math.Max(300, label.Right + 10), form.ClientSize.Height);
-            form.FormBorderStyle = FormBorderStyle.FixedDialog;
+            //form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.StartPosition = FormStartPosition.CenterScreen;
             form.MinimizeBox = false;
             form.MaximizeBox = false;
@@ -559,8 +470,7 @@ namespace slauncher
         }
 
 
-        private void FixLocation()
-        {
+        private void FixLocation() {
             var screen = Screen.FromHandle(Handle);
             if ((this.Left + this.Width) > screen.Bounds.Width)
                 this.Left = screen.Bounds.Width - this.Width;
@@ -576,10 +486,8 @@ namespace slauncher
         }
 
 
-        public string NotePadExe
-        {
-            get
-            {
+        public string NotePadExe {
+            get {
                 string[] candidates = {
                     @"C:\Program Files (x86)\Notepad++\notepad++.exe",
                     @"C:\Program Files\Notepad++\notepad++.exe"
@@ -591,13 +499,11 @@ namespace slauncher
         }
 
 
-        private void EditBtn_Click(object sender, EventArgs e)
-        {
+        private void EditBtn_Click(object sender, EventArgs e) {
             Process.Start(NotePadExe, '"' + FilePath + '"');
         }
 
-        private void NoteBtn_Click(object sender, EventArgs e)
-        {
+        private void NoteBtn_Click(object sender, EventArgs e) {
             Process.Start(NotePadExe, '"' + GlobaNotePath + '"');
         }
 

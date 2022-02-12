@@ -211,7 +211,6 @@ namespace slauncher {
                 if (line.StartsWith("#")) {
                     var parts = line.Substring(1).Trim().Split(new string[] { "-config:" }, StringSplitOptions.None);
                     btnCmd = FirstCharToUpper(parts[0].Trim());
-
                     Commands[btnCmd] = new List<string>();
                     Configs[btnCmd] = new List<string>();
                     if (parts.Length > 1) {
@@ -333,7 +332,6 @@ namespace slauncher {
                     progressBar.Visible = true;
                     msgLabel.Text = Command;
                     msgLabel.Visible = true;
-
                     backgroundWorker1.RunWorkerAsync();
                     (sender as Button).Select();
                 }
@@ -343,23 +341,24 @@ namespace slauncher {
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+            var def = Properties.Settings.Default;
             if (WindowState == FormWindowState.Maximized) {
-                Properties.Settings.Default.Location = RestoreBounds.Location;
-                Properties.Settings.Default.Size = RestoreBounds.Size;
-                Properties.Settings.Default.Maximised = true;
-                Properties.Settings.Default.Minimised = false;
+                def.Location = RestoreBounds.Location;
+                def.Size = RestoreBounds.Size;
+                def.Maximised = true;
+                def.Minimised = false;
             } else if (WindowState == FormWindowState.Normal) {
-                Properties.Settings.Default.Location = Location;
-                Properties.Settings.Default.Size = Size;
-                Properties.Settings.Default.Maximised = false;
-                Properties.Settings.Default.Minimised = false;
+                def.Location = Location;
+                def.Size = Size;
+                def.Maximised = false;
+                def.Minimised = false;
             } else {
-                Properties.Settings.Default.Location = RestoreBounds.Location;
-                Properties.Settings.Default.Size = RestoreBounds.Size;
-                Properties.Settings.Default.Maximised = false;
-                Properties.Settings.Default.Minimised = true;
+                def.Location = RestoreBounds.Location;
+                def.Size = RestoreBounds.Size;
+                def.Maximised = false;
+                def.Minimised = true;
             }
-            Properties.Settings.Default.Save();
+            def.Save();
 
             PreventSleep(false);
 
@@ -418,7 +417,6 @@ namespace slauncher {
         private void BackgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
             progressBar.Visible = false;
             msgLabel.Visible = false;
-            //infoBtn.Visible = true;
 
             foreach (var btn in buttonListPanel.Controls) {
                 (btn as Button).Enabled = true;

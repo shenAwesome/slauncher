@@ -12,8 +12,28 @@ using System.Threading;
 using System.Windows.Forms;
 namespace slauncher {
 
+    [FlagsAttribute]
+    public enum EXECUTION_STATE : uint {
+        ES_AWAYMODE_REQUIRED = 0x00000040,
+        ES_CONTINUOUS = 0x80000000,
+        ES_DISPLAY_REQUIRED = 0x00000002,
+        ES_SYSTEM_REQUIRED = 0x00000001
+        // Legacy flag, should not be used.
+        // ES_USER_PRESENT = 0x00000004
+    }
 
     public partial class Form1 : Form, IDisposable {
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+
+        private void PreventSleep(bool preventSleep = true) {
+            if (preventSleep) {
+                SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_AWAYMODE_REQUIRED);
+            } else {
+                SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
+            }
+        }
 
         public static string FirstCharToUpper(string s) {
             if (string.IsNullOrEmpty(s) || s.Length < 1) return s;
@@ -22,13 +42,12 @@ namespace slauncher {
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
-        private const int MOUSEEVENTF_LEFTDOWN = 0x02;
-        private const int MOUSEEVENTF_LEFTUP = 0x04;
-        private const int WM_PARENTNOTIFY = 0x210;
-        private const int WM_LBUTTONDOWN = 0x201;
 
-        protected override void WndProc(ref Message m) {
-            //to fix toolstrip issue
+        private void FixToolstrip(Message m) {
+            const int MOUSEEVENTF_LEFTDOWN = 0x02;
+            const int MOUSEEVENTF_LEFTUP = 0x04;
+            const int WM_PARENTNOTIFY = 0x210;
+            const int WM_LBUTTONDOWN = 0x201;
             if (m.Msg == WM_PARENTNOTIFY) {
                 if (m.WParam.ToInt32() == WM_LBUTTONDOWN && ActiveForm != this) {
                     Point p = PointToClient(Cursor.Position);
@@ -36,6 +55,11 @@ namespace slauncher {
                         mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, (uint)p.X, (uint)p.Y, 0, 0);
                 }
             }
+        }
+
+        protected override void WndProc(ref Message m) {
+            //to fix toolstrip issue
+            FixToolstrip(m);
 
             if (m.Msg == 100) {
                 ShowMe();
@@ -46,6 +70,7 @@ namespace slauncher {
             }
             base.WndProc(ref m);
         }
+
         private void ShowMe() {
             if (WindowState == FormWindowState.Minimized) {
                 WindowState = FormWindowState.Normal;
@@ -54,6 +79,11 @@ namespace slauncher {
             TopMost = true;
             TopMost = top;
         }
+
+        private readonly string GlobaNotePath;
+        private readonly Dictionary<string, List<string>> Commands = new Dictionary<string, List<string>>();
+        private readonly Dictionary<string, List<string>> Configs = new Dictionary<string, List<string>>();
+        public string FilePath = "";
 
         public Form1() {
             InitializeComponent();
@@ -84,13 +114,10 @@ namespace slauncher {
             }
         }
 
-        readonly string GlobaNotePath;
-
         private class MyRenderer : ToolStripProfessionalRenderer {
             public MyRenderer() {
-                this.RoundedEdges = false;
+                RoundedEdges = false;
             }
-
             protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) {
                 // Do nothing
             }
@@ -101,24 +128,18 @@ namespace slauncher {
             GC.SuppressFinalize(this);
         }
 
-        private readonly Dictionary<string, List<string>> Commands = new Dictionary<string, List<string>>();
-        private readonly Dictionary<string, List<string>> Configs = new Dictionary<string, List<string>>();
-
-
-        public string FilePath = "";
-
         private void LoadCmd(string path) {
             FilePath = path;
             LoadCmd();
         }
-
 
         private bool IsUNC(string path) {
             return Uri.TryCreate(path, UriKind.Absolute, out Uri uri) && uri.IsUnc;
         }
 
         private Bitmap GetIcon(string cmd) {
-            Bitmap icon = null;
+            cmd = cmd.ToLower();
+            Bitmap icon = Properties.Resources.file;
             if (cmd.StartsWith("http")) {
                 icon = Properties.Resources.web;
             } else if (cmd.StartsWith("code")) {
@@ -155,6 +176,7 @@ namespace slauncher {
                     Title = "Create a new launcher",
                     OverwritePrompt = false
                 };
+
                 if (Directory.Exists(FilePath)) {
                     dlg.FileName = "NewLauncher.sl";
                     dlg.InitialDirectory = FilePath;
@@ -179,7 +201,7 @@ namespace slauncher {
             }
             if (lines == null) return;
 
-            this.Text = Path.GetFileNameWithoutExtension(FilePath);
+            Text = Path.GetFileNameWithoutExtension(FilePath);
 
             var btnCmd = "";
             var btns = new List<Button>();
@@ -224,12 +246,8 @@ namespace slauncher {
 
             btns.ForEach(btn => {
                 var cmds = Commands[btn.Text];
-                Bitmap icon = null;
-                if (cmds.Count == 1) {
-                    var cmd = cmds[0].ToLower();
-                    icon = GetIcon(cmd);
-                }
-                if (icon == null) icon = Properties.Resources.file;
+                Bitmap icon = Properties.Resources.file;
+                if (cmds.Count == 1) icon = GetIcon(cmds[0]);
                 btn.Image = icon;
             });
 
@@ -285,6 +303,7 @@ namespace slauncher {
             AllowDrop = true;
             Location = Properties.Settings.Default.Location;
             LoadCmd();
+            PreventSleep(true);
         }
 
         readonly string BatFileName = Path.Combine(Path.GetTempPath(), "_temp.bat");
@@ -292,7 +311,7 @@ namespace slauncher {
             var cmd_low = cmd.ToLower();
             if (cmd_low.StartsWith("http") || cmd_low.StartsWith(@"\\")
                 || cmd_low.IndexOf(@":\") == 1) {
-                cmd = String.Format("start \"\" \"{0}\"", cmd);
+                cmd = string.Format("start \"\" \"{0}\"", cmd);
             }
 
             if (cmd_low.StartsWith("notepad ")) {
@@ -323,10 +342,6 @@ namespace slauncher {
             }
         }
 
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e) {
-            File.Delete(BatFileName);
-        }
-
         private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
             if (WindowState == FormWindowState.Maximized) {
                 Properties.Settings.Default.Location = RestoreBounds.Location;
@@ -345,6 +360,10 @@ namespace slauncher {
                 Properties.Settings.Default.Minimised = true;
             }
             Properties.Settings.Default.Save();
+
+            PreventSleep(false);
+
+            File.Delete(BatFileName);
         }
 
         private void BackgroundWorker1_DoWork(object sender, DoWorkEventArgs e) {
@@ -452,14 +471,14 @@ namespace slauncher {
             buttonCancel.SetBounds(309, 72, 75, 23);
 
             label.AutoSize = true;
-            textBox.Anchor = textBox.Anchor | AnchorStyles.Right;
+            textBox.Anchor |= AnchorStyles.Right;
             buttonOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
 
             form.ClientSize = new Size(396, 107);
             form.Controls.AddRange(new Control[] { label, textBox, buttonOk, buttonCancel });
             form.ClientSize = new Size(Math.Max(300, label.Right + 10), form.ClientSize.Height);
-            //form.FormBorderStyle = FormBorderStyle.FixedDialog;
+            form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.StartPosition = FormStartPosition.CenterScreen;
             form.MinimizeBox = false;
             form.MaximizeBox = false;

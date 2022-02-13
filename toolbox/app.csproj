@@ -149,6 +149,7 @@
     <Content Include="icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\folder2.png" />
     <None Include="Resources\vscode.png" />
     <None Include="Resources\web.png" />
     <None Include="Resources\sharedFolder.png" />

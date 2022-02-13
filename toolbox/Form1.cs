@@ -151,7 +151,7 @@ namespace slauncher {
             } else if (IsUNC(cmd)) {
                 icon = Properties.Resources.sharedFolder;
             } else if (Directory.Exists(cmd)) {
-                icon = Properties.Resources.folder;
+                icon = Properties.Resources.folder2;
             } else {
                 try {
                     var testPath = cmd.Trim();
@@ -232,6 +232,7 @@ namespace slauncher {
                     };
                     btn.Click += this.BtnClick;
                     btn.FlatAppearance.BorderColor = SystemColors.Control;
+                    btn.FlatAppearance.BorderSize = 0;
                     btn.FlatAppearance.MouseOverBackColor = Color.Silver;
                     btns.Add(btn);
                 } else {

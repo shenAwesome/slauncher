@@ -102,7 +102,7 @@
             // buttonListPanel
             // 
             this.buttonListPanel.AutoScroll = true;
-            this.buttonListPanel.BackColor = System.Drawing.SystemColors.Control;
+            this.buttonListPanel.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.buttonListPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.buttonListPanel.Location = new System.Drawing.Point(3, 81);
             this.buttonListPanel.Margin = new System.Windows.Forms.Padding(0);
@@ -115,7 +115,7 @@
             // emptyMessage
             // 
             this.emptyMessage.AutoEllipsis = true;
-            this.emptyMessage.BackColor = System.Drawing.SystemColors.Control;
+            this.emptyMessage.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.emptyMessage.Dock = System.Windows.Forms.DockStyle.Top;
             this.emptyMessage.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.emptyMessage.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -133,6 +133,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(276, 362);
             this.Controls.Add(this.buttonListPanel);
             this.Controls.Add(this.toolStrip1);

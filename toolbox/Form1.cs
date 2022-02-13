@@ -209,6 +209,7 @@ namespace slauncher {
             foreach (var _line in lines) {
                 var line = _line.Trim();
                 if (line.StartsWith("#")) {
+                    //-config:console,async
                     var parts = line.Substring(1).Trim().Split(new string[] { "-config:" }, StringSplitOptions.None);
                     btnCmd = FirstCharToUpper(parts[0].Trim());
                     Commands[btnCmd] = new List<string>();
@@ -383,8 +384,7 @@ namespace slauncher {
                     WorkingDirectory = workingDir,
                     FileName = BatFileName
                 };
-            } else //hide shell
-              {
+            } else {  //hide shell
                 process.StartInfo = new ProcessStartInfo {
                     WorkingDirectory = workingDir,
                     FileName = BatFileName,

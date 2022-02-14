@@ -29,7 +29,8 @@ namespace slauncher {
 
         private void PreventSleep(bool preventSleep = true) {
             if (preventSleep) {
-                SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_AWAYMODE_REQUIRED);
+                SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS |
+                    EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_SYSTEM_REQUIRED);
             } else {
                 SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
             }
@@ -229,7 +230,7 @@ namespace slauncher {
                         TextAlign = ContentAlignment.MiddleLeft,
                         ImageAlign = ContentAlignment.MiddleRight,
                         FlatStyle = FlatStyle.Flat,
-                        ForeColor = Color.Black
+                        ForeColor = Color.Black,
                     };
                     btn.Click += this.BtnClick;
                     btn.FlatAppearance.BorderColor = SystemColors.Control;

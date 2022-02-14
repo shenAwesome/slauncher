@@ -5202,7 +5202,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:SLauncher"
         "ProductCode" = "8:{8DD26A4F-5420-4DC0-9A28-D32CE40D390B}"
-        "PackageCode" = "8:{C6241298-DF81-4E52-801F-4E26E0E3199A}"
+        "PackageCode" = "8:{98260370-43DA-4ED8-A615-8FE30C163E06}"
         "UpgradeCode" = "8:{7BC683DC-6CFE-4C97-9520-E2857521916C}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"

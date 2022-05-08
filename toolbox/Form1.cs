@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Timers;
 using System.Windows.Forms;
 namespace slauncher {
 
@@ -22,7 +23,10 @@ namespace slauncher {
         // ES_USER_PRESENT = 0x00000004
     }
 
+
+
     public partial class Form1 : Form, IDisposable {
+        System.Timers.Timer cursorTimer;
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
@@ -31,9 +35,23 @@ namespace slauncher {
             if (preventSleep) {
                 SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS |
                     EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_SYSTEM_REQUIRED);
+                //todo set timer to move cursor every min 
+                if (cursorTimer != null) cursorTimer.Enabled = false;
+                cursorTimer = new System.Timers.Timer();
+                cursorTimer.Elapsed += new ElapsedEventHandler(MoveCursor);
+                cursorTimer.Interval = 60 * 1000;
+                cursorTimer.Enabled = true;
             } else {
                 SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
+                //shutdown timer
+                cursorTimer.Enabled = false;
             }
+        }
+
+        private void MoveCursor(object sender, ElapsedEventArgs e) {
+            var pos = Cursor.Position;
+            Cursor.Position = new Point(pos.X + 100, pos.Y);
+            Cursor.Position = pos;
         }
 
         public static string FirstCharToUpper(string s) {

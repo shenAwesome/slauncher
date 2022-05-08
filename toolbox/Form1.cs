@@ -50,7 +50,7 @@ namespace slauncher {
 
         private void MoveCursor(object sender, ElapsedEventArgs e) {
             var pos = Cursor.Position;
-            Cursor.Position = new Point(pos.X + 100, pos.Y);
+            Cursor.Position = new Point(pos.X + 1, pos.Y);
             Cursor.Position = pos;
         }
 

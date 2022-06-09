@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gma.System.MouseKeyHook;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -11,6 +12,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
+
+using PInvoke;
+
 namespace slauncher {
 
     [FlagsAttribute]
@@ -24,12 +28,14 @@ namespace slauncher {
     }
 
 
-
     public partial class Form1 : Form, IDisposable {
         System.Timers.Timer cursorTimer;
 
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+
+        readonly int heartbeat = 100;
+        int offset = 10;
 
         private void PreventSleep(bool preventSleep = true) {
             if (preventSleep) {
@@ -39,7 +45,7 @@ namespace slauncher {
                 if (cursorTimer != null) cursorTimer.Enabled = false;
                 cursorTimer = new System.Timers.Timer();
                 cursorTimer.Elapsed += new ElapsedEventHandler(MoveCursor);
-                cursorTimer.Interval = 60 * 1000;
+                cursorTimer.Interval = heartbeat * 1000;
                 cursorTimer.Enabled = true;
             } else {
                 SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
@@ -49,9 +55,25 @@ namespace slauncher {
         }
 
         private void MoveCursor(object sender, ElapsedEventArgs e) {
-            var pos = Cursor.Position;
-            Cursor.Position = new Point(pos.X + 1, pos.Y);
-            Cursor.Position = pos;
+            var idle = (DateTime.Now - lastActionTime).TotalSeconds > (heartbeat * .9);
+            Action test = delegate {
+                //Text = (DateTime.Now - lastActionTime).TotalSeconds.ToString();
+                Opacity = idle ? .8 : 1;
+            };
+            Invoke(test);
+            if (idle) {
+                /*
+                Action safeWrite = delegate {
+                    var pos = Cursor.Position;
+                    Cursor = new Cursor(Cursor.Current.Handle);
+                    Cursor.Position = new Point(pos.X + offset, pos.Y + offset);
+                    offset = -offset;
+                };
+                Invoke(safeWrite);
+                */
+                Helpers.Jiggle(offset);
+                offset = -offset;
+            }
         }
 
         public static string FirstCharToUpper(string s) {
@@ -131,6 +153,20 @@ namespace slauncher {
                 };
                 File.WriteAllLines(GlobaNotePath, lines);
             }
+
+            m_GlobalHook = Hook.GlobalEvents();
+            m_GlobalHook.MouseMoveExt += GlobalHookMouseDownExt;
+            m_GlobalHook.KeyPress += GlobalHookKeyPress;
+        }
+        IKeyboardMouseEvents m_GlobalHook;
+        DateTime lastActionTime = DateTime.Now;
+
+        private void GlobalHookKeyPress(object sender, KeyPressEventArgs e) {
+            lastActionTime = DateTime.Now;
+        }
+
+        private void GlobalHookMouseDownExt(object sender, MouseEventExtArgs e) {
+            lastActionTime = DateTime.Now;
         }
 
         private class MyRenderer : ToolStripProfessionalRenderer {
@@ -143,6 +179,11 @@ namespace slauncher {
         }
 
         public new void Dispose() {
+            m_GlobalHook = Hook.GlobalEvents();
+            m_GlobalHook.MouseMoveExt -= GlobalHookMouseDownExt;
+            m_GlobalHook.KeyPress -= GlobalHookKeyPress;
+            m_GlobalHook.Dispose();
+
             Dispose(true);
             GC.SuppressFinalize(this);
         }

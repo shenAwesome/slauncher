@@ -50,7 +50,7 @@ namespace slauncher {
             } else {
                 SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
                 //shutdown timer
-                cursorTimer.Enabled = false;
+                if (cursorTimer != null) cursorTimer.Enabled = false;
             }
         }
 
